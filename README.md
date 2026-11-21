@@ -51,7 +51,7 @@ Nobody can read HR-confidential docs in v1. They exist to test that retrieval ne
 
 ## Build phases
 
-- [ ] 1. Repo, database, synthetic data
+- [x] 1. Repo, database, synthetic data
 - [ ] 2. CRM MCP server
 - [ ] 3. Finance, Knowledge, Email servers
 - [ ] 4. Insecure baseline agent
@@ -61,6 +61,10 @@ Nobody can read HR-confidential docs in v1. They exist to test that retrieval ne
 - [ ] 8. Azure deployment
 
 Definitions of done: [docs/PROJECT_SPEC.md](docs/PROJECT_SPEC.md), section 8.
+
+## Decision records
+
+- [0001: pgvector in Postgres instead of a separate vector database](docs/adr/0001-pgvector-in-postgres.md)
 
 ## Quick start
 
