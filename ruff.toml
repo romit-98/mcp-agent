@@ -1,0 +1,18 @@
+# Shared lint config for every service (ruff finds the nearest ruff.toml).
+line-length = 100
+target-version = "py312"
+src = ["services/*/src"]  # so each service's own package sorts as first-party
+
+[lint]
+select = [
+    "E", "W",  # pycodestyle
+    "F",       # pyflakes
+    "I",       # import sorting
+    "B",       # likely bugs
+    "UP",      # modern syntax
+    "S",       # security (bandit)
+    "ISC",     # implicit string concatenation
+]
+
+[lint.per-file-ignores]
+"**/tests/**" = ["S101"]  # assert is how pytest works
