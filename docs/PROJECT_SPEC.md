@@ -222,11 +222,10 @@ and any other project ideas.
 
 ## 13. Repo layout and starter files
 
-Claude Code scaffolds this at the start of phase 1 (show the file list first, create after OK).
+Scaffolded at the start of phase 1.
 
 ```
 secure-mcp-agent/
-├── CLAUDE.md
 ├── README.md
 ├── docker-compose.yml
 ├── .env.example

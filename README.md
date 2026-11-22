@@ -93,7 +93,6 @@ doesn't clash with a locally installed Postgres on 5432. Change it with `POSTGRE
 
 ```
 secure-mcp-agent/
-├── CLAUDE.md
 ├── README.md
 ├── docker-compose.yml
 ├── .env.example
