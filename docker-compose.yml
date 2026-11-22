@@ -16,6 +16,26 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
+
+  mcp-crm:
+    build: ./services/mcp-crm
+    image: northstar/mcp-crm:dev
+    container_name: northstar-mcp-crm
+    environment:
+      CRM_DB_HOST: postgres  # the compose service name, on the internal network
+      CRM_DB_PORT: 5432      # the container port, not the 5433 host port
+      CRM_DB_NAME: ${POSTGRES_DB:-northstar}
+      CRM_DB_USER: ${CRM_DB_USER:?Set CRM_DB_USER in .env}
+      CRM_DB_PASSWORD: ${CRM_DB_PASSWORD:?Set CRM_DB_PASSWORD in .env}
+      CRM_DEV_AUTH: ${CRM_DEV_AUTH:-false}
+    ports:
+      # Localhost only: until phase 5, anyone who can reach this port can claim any identity.
+      - "127.0.0.1:${CRM_HOST_PORT:-8001}:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   pgdata:

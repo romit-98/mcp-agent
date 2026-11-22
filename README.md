@@ -52,7 +52,7 @@ Nobody can read HR-confidential docs in v1. They exist to test that retrieval ne
 ## Build phases
 
 - [x] 1. Repo, database, synthetic data
-- [ ] 2. CRM MCP server
+- [x] 2. CRM MCP server
 - [ ] 3. Finance, Knowledge, Email servers
 - [ ] 4. Insecure baseline agent
 - [ ] 5. Identity (Keycloak)
@@ -65,6 +65,7 @@ Definitions of done: [docs/PROJECT_SPEC.md](docs/PROJECT_SPEC.md), section 8.
 ## Decision records
 
 - [0001: pgvector in Postgres instead of a separate vector database](docs/adr/0001-pgvector-in-postgres.md)
+- [0002: Identity comes from the request, never from tool arguments](docs/adr/0002-identity-from-the-request.md)
 
 ## Quick start
 
@@ -89,6 +90,31 @@ docker exec -i northstar-postgres psql -U northstar -d northstar < data/seed/ver
 From the host (pgAdmin, VS Code, Python), Postgres is on `localhost:5433` by default, so it
 doesn't clash with a locally installed Postgres on 5432. Change it with `POSTGRES_PORT` in `.env`.
 
+## CRM MCP server
+
+Three read-only tools over Streamable HTTP (stateless) at `http://localhost:8001/mcp`:
+
+| Tool | Returns |
+|---|---|
+| `search_accounts(query?, status?)` | Accounts the caller may see (max 50) |
+| `get_account(account_id)` | One account; `notes` is marked untrusted |
+| `list_contacts(account_id)` | The account's contacts, billing contact first |
+
+Reps see only their own accounts, finance sees all, contractors are forbidden. Another user's
+account looks exactly like a missing one. Until phase 5, identity comes from the `X-Dev-User`
+(user UUID) and `X-Dev-Role` headers, accepted only when `CRM_DEV_AUTH=true`.
+
+```sh
+docker compose up -d mcp-crm                      # or: CRM_DEV_AUTH=true docker compose up -d mcp-crm
+cd services/mcp-crm
+uv run --env-file ../../.env pytest               # 47 tests; needs the seeded database
+uv run --env-file ../../.env python -m mcp_crm.server   # run without Docker
+```
+
+Try it with MCP Inspector (`npx @modelcontextprotocol/inspector@latest`): Streamable HTTP,
+`http://localhost:8001/mcp`, headers `X-Dev-User: 5e1f0000-0000-4000-8000-000000000001` and
+`X-Dev-Role: sales_rep` (rep1).
+
 ## Repo layout
 
 ```
@@ -98,15 +124,15 @@ secure-mcp-agent/
 ├── .env.example
 ├── .gitignore
 ├── data/
-│   └── init/
-│       └── 00-extensions.sql
+│   ├── init/            # schema, run on first start
+│   └── seed/            # deterministic synthetic data + verify.sql
 ├── docs/
 │   ├── PROJECT_SPEC.md
 │   └── adr/
 ├── services/
 │   ├── agent/           # LangGraph agent API
 │   ├── gateway/         # MCP gateway and security layers
-│   ├── mcp-crm/
+│   ├── mcp-crm/         # done: 3 tools, 47 tests, Dockerfile
 │   ├── mcp-finance/
 │   ├── mcp-knowledge/
 │   └── mcp-email/       # mock

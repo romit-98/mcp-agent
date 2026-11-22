@@ -1,0 +1,10 @@
+# Store and check out text files with LF, so Linux containers and CI see the same bytes.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+*.png binary
+*.jpg binary
