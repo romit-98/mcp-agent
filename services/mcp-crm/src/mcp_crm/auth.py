@@ -12,6 +12,7 @@ from typing import Literal, cast, get_args
 from uuid import UUID
 
 from mcp.server.mcpserver import Context
+from mcp.server.mcpserver.exceptions import ToolError
 
 from mcp_crm.settings import get_settings
 
@@ -24,8 +25,12 @@ DEV_USER_HEADER = "x-dev-user"
 DEV_ROLE_HEADER = "x-dev-role"
 
 
-class Unauthenticated(PermissionError):
-    """No trustworthy identity on the request. The message is deliberately generic."""
+class Unauthenticated(ToolError):
+    """No trustworthy identity on the request. The message is deliberately generic.
+
+    A ToolError, so the caller sees this exact message as an error result instead of the
+    SDK's "Error executing tool" for unexpected crashes.
+    """
 
     def __init__(self) -> None:
         super().__init__("unauthenticated")
