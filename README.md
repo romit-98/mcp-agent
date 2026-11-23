@@ -132,7 +132,29 @@ docker compose up -d mcp-finance
 cd services/mcp-finance && uv run --env-file ../../.env pytest   # 34 tests
 ```
 
-Try either server with MCP Inspector (`npx @modelcontextprotocol/inspector@latest`): Streamable HTTP,
+## Email MCP server (mock)
+
+At `http://localhost:8003/mcp` (`EMAIL_*` settings). `send_email(to, subject, body)` writes to
+`email.outbox` and never really sends.
+
+| Sender | May email |
+|---|---|
+| Sales rep | Internal staff, and contacts on accounts they own |
+| Finance | Internal staff only |
+| Contractor | Nobody |
+
+Addresses are matched case-insensitively, and every refusal says the same thing
+(`recipient not allowed`), so a reply can't reveal whose contact an address is. The recipient
+must be one plain address and the subject a single line, which blocks header injection
+(`...\nBcc: attacker@...`). Whether a recipient came from the user or from untrusted text is
+checked by the gateway in phase 6.
+
+```sh
+docker compose up -d mcp-email
+cd services/mcp-email && uv run --env-file ../../.env pytest   # 22 tests
+```
+
+Try any server with MCP Inspector (`npx @modelcontextprotocol/inspector@latest`): Streamable HTTP,
 `http://localhost:8001/mcp`, headers `X-Dev-User: 5e1f0000-0000-4000-8000-000000000001` and
 `X-Dev-Role: sales_rep` (rep1).
 
@@ -158,7 +180,7 @@ secure-mcp-agent/
 │   ├── mcp-crm/         # done: 3 tools, 47 tests, Dockerfile
 │   ├── mcp-finance/     # done: 3 tools, 34 tests, Dockerfile
 │   ├── mcp-knowledge/
-│   └── mcp-email/       # mock
+│   └── mcp-email/       # done (mock): send_email, 22 tests, Dockerfile
 ├── evals/
 │   ├── scenarios/
 │   └── reports/

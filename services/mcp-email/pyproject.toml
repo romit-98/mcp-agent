@@ -1,0 +1,27 @@
+[project]
+name = "northstar-mcp-email"
+version = "0.1.0"
+description = "Email MCP server (mock) for Northstar Logistics"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp[cli]>=2.3,<3",
+    "northstar-common",
+    "psycopg[binary,pool]>=3.2,<4",
+    "pydantic-settings>=2.16,<3",
+]
+
+[tool.uv.sources]
+northstar-common = { path = "../../libs/northstar-common", editable = true }
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_email"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

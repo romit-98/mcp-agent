@@ -59,5 +59,25 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  mcp-email:
+    build:
+      context: .
+      dockerfile: services/mcp-email/Dockerfile
+    image: northstar/mcp-email:dev
+    container_name: northstar-mcp-email
+    environment:
+      EMAIL_DB_HOST: postgres
+      EMAIL_DB_PORT: 5432
+      EMAIL_DB_NAME: ${POSTGRES_DB:-northstar}
+      EMAIL_DB_USER: ${EMAIL_DB_USER:?Set EMAIL_DB_USER in .env}
+      EMAIL_DB_PASSWORD: ${EMAIL_DB_PASSWORD:?Set EMAIL_DB_PASSWORD in .env}
+      EMAIL_DEV_AUTH: ${EMAIL_DEV_AUTH:-false}
+    ports:
+      - "127.0.0.1:${EMAIL_HOST_PORT:-8003}:8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   pgdata:
