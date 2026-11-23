@@ -107,7 +107,8 @@ account looks exactly like a missing one. Until phase 5, identity comes from the
 ```sh
 docker compose up -d mcp-crm                      # or: CRM_DEV_AUTH=true docker compose up -d mcp-crm
 cd services/mcp-crm
-uv run --env-file ../../.env pytest               # 47 tests; needs the seeded database
+uv run --env-file ../../.env pytest               # 33 tests; needs the seeded database
+# identity tests (14) live in libs/northstar-common: cd libs/northstar-common && uv run pytest
 uv run --env-file ../../.env python -m mcp_crm.server   # run without Docker
 ```
 
@@ -129,6 +130,8 @@ secure-mcp-agent/
 ├── docs/
 │   ├── PROJECT_SPEC.md
 │   └── adr/
+├── libs/
+│   └── northstar-common/  # identity, errors, settings, DB pool: shared by every server
 ├── services/
 │   ├── agent/           # LangGraph agent API
 │   ├── gateway/         # MCP gateway and security layers

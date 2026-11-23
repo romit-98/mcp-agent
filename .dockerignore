@@ -1,0 +1,15 @@
+# Build context is the repo root (services need libs/). Send only what images use.
+.git/
+.env
+CLAUDE.md
+.claude/
+data/
+docs/
+evals/
+infra/
+**/.venv/
+**/tests/
+**/__pycache__/
+**/.pytest_cache/
+**/.ruff_cache/
+**/*.pyc

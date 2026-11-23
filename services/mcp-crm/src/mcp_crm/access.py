@@ -3,23 +3,8 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from mcp.server.mcpserver.exceptions import ToolError
-
-from mcp_crm.auth import Identity
-
-
-class Forbidden(ToolError):
-    """The caller's role has no access to this tool at all."""
-
-    def __init__(self) -> None:
-        super().__init__("forbidden")
-
-
-class AccountNotFound(ToolError):
-    """Missing and not-yours look identical, so the reply can't confirm an account exists."""
-
-    def __init__(self, account_id: str) -> None:
-        super().__init__(f"account {account_id} not found")
+from northstar_common.errors import Forbidden
+from northstar_common.identity import Identity
 
 
 @dataclass(frozen=True)

@@ -371,11 +371,32 @@ wheels = [
 ]
 
 [[package]]
+name = "northstar-common"
+version = "0.1.0"
+source = { editable = "../../libs/northstar-common" }
+dependencies = [
+    { name = "mcp", extra = ["cli"] },
+    { name = "psycopg", extra = ["binary", "pool"] },
+    { name = "pydantic-settings" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "mcp", extras = ["cli"], specifier = ">=2.3,<3" },
+    { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2,<4" },
+    { name = "pydantic-settings", specifier = ">=2.16,<3" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8" }]
+
+[[package]]
 name = "northstar-mcp-crm"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "mcp", extra = ["cli"] },
+    { name = "northstar-common" },
     { name = "psycopg", extra = ["binary", "pool"] },
     { name = "pydantic-settings" },
 ]
@@ -388,6 +409,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "mcp", extras = ["cli"], specifier = ">=2.3,<3" },
+    { name = "northstar-common", editable = "../../libs/northstar-common" },
     { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2,<4" },
     { name = "pydantic-settings", specifier = ">=2.16,<3" },
 ]

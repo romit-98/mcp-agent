@@ -19,7 +19,9 @@ services:
     restart: unless-stopped
 
   mcp-crm:
-    build: ./services/mcp-crm
+    build:
+      context: .  # repo root, so the image can include libs/northstar-common
+      dockerfile: services/mcp-crm/Dockerfile
     image: northstar/mcp-crm:dev
     container_name: northstar-mcp-crm
     environment:

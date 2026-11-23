@@ -1,7 +1,7 @@
 # Shared lint config for every service (ruff finds the nearest ruff.toml).
 line-length = 100
 target-version = "py312"
-src = ["services/*/src"]  # so each service's own package sorts as first-party
+src = ["services/*/src", "libs/*/src"]  # so our own packages sort as first-party
 
 [lint]
 select = [

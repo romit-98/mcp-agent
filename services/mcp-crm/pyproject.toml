@@ -5,9 +5,13 @@ description = "CRM MCP server for Northstar Logistics"
 requires-python = ">=3.12"
 dependencies = [
     "mcp[cli]>=2.3,<3",
+    "northstar-common",
     "psycopg[binary,pool]>=3.2,<4",
     "pydantic-settings>=2.16,<3",
 ]
+
+[tool.uv.sources]
+northstar-common = { path = "../../libs/northstar-common", editable = true }
 
 [dependency-groups]
 dev = ["pytest>=8"]

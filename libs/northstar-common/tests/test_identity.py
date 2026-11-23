@@ -4,7 +4,8 @@ from uuid import UUID
 
 import pytest
 
-from mcp_crm.auth import Identity, Unauthenticated, identity_from_headers
+from northstar_common.errors import Unauthenticated
+from northstar_common.identity import Identity, identity_from_headers
 
 REP1 = "5e1f0000-0000-4000-8000-000000000001"
 

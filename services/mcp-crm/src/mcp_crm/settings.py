@@ -2,22 +2,15 @@
 
 from functools import lru_cache
 
-from pydantic import SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
+
+from northstar_common.settings import ServiceSettings
 
 
-class Settings(BaseSettings):
+class Settings(ServiceSettings):
     model_config = SettingsConfigDict(env_prefix="CRM_", extra="ignore")
 
-    host: str = "127.0.0.1"
     port: int = 8001
-    dev_auth: bool = False  # trust the X-Dev-User header; off unless set, so it fails closed
-
-    db_host: str = "localhost"
-    db_port: int = 5433
-    db_name: str = "northstar"
-    db_user: str
-    db_password: SecretStr  # no default: fail fast if missing; shows as ********** in logs
 
 
 @lru_cache
