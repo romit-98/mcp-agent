@@ -1,31 +1,9 @@
-"""Which CRM rows a caller may see (spec section 3). App-level check; RLS backs it in phase 6."""
+"""CRM access: the shared account-ownership rule, plus CRM's search escaping."""
 
-from dataclasses import dataclass
-from uuid import UUID
+from northstar_common.access import VISIBLE_ACCOUNT, AccountScope
+from northstar_common.access import account_scope as crm_scope
 
-from northstar_common.errors import Forbidden
-from northstar_common.identity import Identity
-
-
-@dataclass(frozen=True)
-class AccountScope:
-    user_id: UUID
-    see_all: bool  # False unless explicitly granted, so a bug narrows access, never widens it
-
-
-def crm_scope(identity: Identity) -> AccountScope:
-    """Deny by default: only roles listed here get any CRM access."""
-    match identity.role:
-        case "finance_analyst":
-            return AccountScope(user_id=identity.user_id, see_all=True)
-        case "sales_rep":
-            return AccountScope(user_id=identity.user_id, see_all=False)
-        case _:
-            raise Forbidden()
-
-
-# Every account query includes this filter, with params from AccountScope.
-VISIBLE_ACCOUNT = "(%(see_all)s OR a.owner_user_id = %(user_id)s)"
+__all__ = ["VISIBLE_ACCOUNT", "AccountScope", "crm_scope", "like_pattern"]
 
 
 def like_pattern(text: str | None) -> str | None:

@@ -112,7 +112,27 @@ uv run --env-file ../../.env pytest               # 33 tests; needs the seeded d
 uv run --env-file ../../.env python -m mcp_crm.server   # run without Docker
 ```
 
-Try it with MCP Inspector (`npx @modelcontextprotocol/inspector@latest`): Streamable HTTP,
+## Finance MCP server
+
+At `http://localhost:8002/mcp` (`FIN_*` settings, `FIN_DEV_AUTH` for the dev headers):
+
+| Tool | Who | Returns |
+|---|---|---|
+| `list_invoices(account_id?, status?)` | reps (own accounts), finance (all) | Up to 100 invoices, `truncated` if more |
+| `get_invoice(invoice_id)` | reps (own accounts), finance (all) | One invoice, including `bank_ref` |
+| `draft_credit_note(invoice_id, amount, reason)` | finance only | A credit note **pending approval**; nothing is issued |
+
+Credit notes on an invoice can never add up to more than the invoice, even when two drafts
+arrive at once (the invoice row is locked while checking). `bank_ref` is returned as stored:
+the gateway redacts it before the LLM in phase 6, which is what the baseline-vs-secured
+comparison shows.
+
+```sh
+docker compose up -d mcp-finance
+cd services/mcp-finance && uv run --env-file ../../.env pytest   # 34 tests
+```
+
+Try either server with MCP Inspector (`npx @modelcontextprotocol/inspector@latest`): Streamable HTTP,
 `http://localhost:8001/mcp`, headers `X-Dev-User: 5e1f0000-0000-4000-8000-000000000001` and
 `X-Dev-Role: sales_rep` (rep1).
 
@@ -136,7 +156,7 @@ secure-mcp-agent/
 │   ├── agent/           # LangGraph agent API
 │   ├── gateway/         # MCP gateway and security layers
 │   ├── mcp-crm/         # done: 3 tools, 47 tests, Dockerfile
-│   ├── mcp-finance/
+│   ├── mcp-finance/     # done: 3 tools, 34 tests, Dockerfile
 │   ├── mcp-knowledge/
 │   └── mcp-email/       # mock
 ├── evals/
