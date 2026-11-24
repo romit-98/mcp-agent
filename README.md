@@ -53,7 +53,7 @@ Nobody can read HR-confidential docs in v1. They exist to test that retrieval ne
 
 - [x] 1. Repo, database, synthetic data
 - [x] 2. CRM MCP server
-- [ ] 3. Finance, Knowledge, Email servers
+- [x] 3. Finance, Knowledge, Email servers
 - [ ] 4. Insecure baseline agent
 - [ ] 5. Identity (Keycloak)
 - [ ] 6. Gateway and security layers
@@ -66,6 +66,8 @@ Definitions of done: [docs/PROJECT_SPEC.md](docs/PROJECT_SPEC.md), section 8.
 
 - [0001: pgvector in Postgres instead of a separate vector database](docs/adr/0001-pgvector-in-postgres.md)
 - [0002: Identity comes from the request, never from tool arguments](docs/adr/0002-identity-from-the-request.md)
+- [0003: Local embeddings and permission-aware hybrid search](docs/adr/0003-local-embeddings-and-hybrid-search.md)
+- [0004: One shared library for security-critical code](docs/adr/0004-shared-library-for-security-code.md)
 
 ## Quick start
 
