@@ -16,7 +16,11 @@ Use `-i`, not `-it`: a TTY breaks piping.
 ```
 python data\seed\seed.py | docker exec -i northstar-postgres psql -U <user> -d northstar
 docker exec -i northstar-postgres psql -U <user> -d northstar < data\seed\verify.sql
+docker compose run --rm mcp-knowledge python -m mcp_knowledge.ingest
 ```
+
+The seed empties `knowledge.chunks`, so re-run ingestion (the last line) after every reseed,
+or document search returns nothing.
 
 Every row of the verify output should show `ok = t`. Re-running the seed is safe: it resets the
 seeded tables (including the audit log and approvals) and loads the same data again. It never

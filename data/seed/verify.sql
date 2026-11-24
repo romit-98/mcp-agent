@@ -35,10 +35,10 @@ WITH checks(n, check_name, expected, actual) AS (
           WHERE u.username = 'rep1' AND i.status = 'overdue')::text),
     (12, 'INV-1042 not paid (S4)', 'true',
         (SELECT status <> 'paid' FROM finance.invoices WHERE id = 'INV-1042')::text),
-    (13, 'empty tables (credit notes, outbox, audit, approvals, chunks)', '0',
+    -- Chunks are filled by ingestion (mcp_knowledge.ingest), not the seed, so they aren't checked.
+    (13, 'empty tables (credit notes, outbox, audit, approvals)', '0',
         ((SELECT count(*) FROM finance.credit_notes) + (SELECT count(*) FROM email.outbox)
-         + (SELECT count(*) FROM audit.events) + (SELECT count(*) FROM gateway.approvals)
-         + (SELECT count(*) FROM knowledge.chunks))::text),
+         + (SELECT count(*) FROM audit.events) + (SELECT count(*) FROM gateway.approvals))::text),
     (14, 'documents by classification',
         'contractor=10,finance=15,hr_confidential=5,staff=30',
         (SELECT string_agg(classification || '=' || c, ',' ORDER BY classification)

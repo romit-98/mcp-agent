@@ -85,9 +85,9 @@ CREATE TABLE knowledge.chunks (
     document_id TEXT NOT NULL REFERENCES knowledge.documents(id) ON DELETE CASCADE,
     chunk_index INT NOT NULL CHECK (chunk_index >= 0),
     content TEXT NOT NULL,
-    -- Dimension fixed in phase 3 once the embedding model is chosen
-    -- (ALTER COLUMN ... TYPE VECTOR(n), then add an HNSW index).
-    embedding VECTOR,
+    -- BAAI/bge-small-en-v1.5 (384 dims). No ANN index: ~60 docs use exact search, which also
+    -- keeps "filter by access, then rank" exact (ADR 0001).
+    embedding VECTOR(384),
     tsv TSVECTOR GENERATED ALWAYS AS (to_tsvector('english', content)) STORED,
     UNIQUE (document_id, chunk_index)
 );

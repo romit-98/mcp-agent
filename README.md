@@ -154,6 +154,28 @@ docker compose up -d mcp-email
 cd services/mcp-email && uv run --env-file ../../.env pytest   # 22 tests
 ```
 
+## Knowledge MCP server
+
+At `http://localhost:8004/mcp` (`KNOW_*` settings). `search_docs(query, k=5)` runs
+**permission-aware hybrid search** in one SQL query:
+
+1. keep only the documents the caller's role may read (`knowledge.document_access`)
+2. rank them by meaning (pgvector cosine distance) and by keywords (Postgres full-text search)
+3. merge the two rankings with reciprocal rank fusion and return the top `k`
+
+Access is filtered *before* ranking, so unauthorised chunks never leave the database. Nobody can
+read HR-confidential documents. Each result's content is marked untrusted. Embeddings come from
+`BAAI/bge-small-en-v1.5` (384 dims) via `fastembed`, running locally; the image has the model
+baked in and never downloads at runtime.
+
+Documents must be ingested (chunked and embedded) after every reseed:
+
+```sh
+docker compose run --rm mcp-knowledge python -m mcp_knowledge.ingest   # or, without Docker:
+cd services/mcp-knowledge && uv run --env-file ../../.env python -m mcp_knowledge.ingest
+uv run --env-file ../../.env pytest                                     # 22 tests
+```
+
 Try any server with MCP Inspector (`npx @modelcontextprotocol/inspector@latest`): Streamable HTTP,
 `http://localhost:8001/mcp`, headers `X-Dev-User: 5e1f0000-0000-4000-8000-000000000001` and
 `X-Dev-Role: sales_rep` (rep1).
@@ -179,7 +201,7 @@ secure-mcp-agent/
 │   ├── gateway/         # MCP gateway and security layers
 │   ├── mcp-crm/         # done: 3 tools, 47 tests, Dockerfile
 │   ├── mcp-finance/     # done: 3 tools, 34 tests, Dockerfile
-│   ├── mcp-knowledge/
+│   ├── mcp-knowledge/   # done: hybrid search + ingestion, 22 tests, Dockerfile
 │   └── mcp-email/       # done (mock): send_email, 22 tests, Dockerfile
 ├── evals/
 │   ├── scenarios/

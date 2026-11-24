@@ -79,5 +79,25 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  mcp-knowledge:
+    build:
+      context: .
+      dockerfile: services/mcp-knowledge/Dockerfile
+    image: northstar/mcp-knowledge:dev
+    container_name: northstar-mcp-knowledge
+    environment:
+      KNOW_DB_HOST: postgres
+      KNOW_DB_PORT: 5432
+      KNOW_DB_NAME: ${POSTGRES_DB:-northstar}
+      KNOW_DB_USER: ${KNOW_DB_USER:?Set KNOW_DB_USER in .env}
+      KNOW_DB_PASSWORD: ${KNOW_DB_PASSWORD:?Set KNOW_DB_PASSWORD in .env}
+      KNOW_DEV_AUTH: ${KNOW_DEV_AUTH:-false}
+    ports:
+      - "127.0.0.1:${KNOW_HOST_PORT:-8004}:8004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   pgdata:
