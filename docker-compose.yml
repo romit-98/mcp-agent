@@ -99,5 +99,26 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # INSECURE BASELINE (phase 4): no access control by design. Only started on request:
+  #   docker compose --profile baseline up -d mcp-insecure
+  mcp-insecure:
+    profiles: ["baseline"]
+    build:
+      context: .
+      dockerfile: services/mcp-insecure/Dockerfile
+    image: northstar/mcp-insecure:dev
+    container_name: northstar-mcp-insecure
+    environment:
+      INSECURE_DB_HOST: postgres
+      INSECURE_DB_PORT: 5432
+      INSECURE_DB_NAME: ${POSTGRES_DB:-northstar}
+      INSECURE_DB_USER: ${INSECURE_DB_USER:?Set INSECURE_DB_USER in .env}
+      INSECURE_DB_PASSWORD: ${INSECURE_DB_PASSWORD:?Set INSECURE_DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:${INSECURE_HOST_PORT:-8010}:8010"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   pgdata:

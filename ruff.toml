@@ -15,6 +15,7 @@ select = [
 ]
 
 [lint.per-file-ignores]
+"evals/harness/src/evals_harness/report.py" = ["E501"]  # markdown table rows read better unwrapped
 "**/tests/**" = [
     "S101",  # assert is how pytest works
     "S608",  # ground-truth queries in tests compose SQL from test constants
