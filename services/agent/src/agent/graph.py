@@ -16,6 +16,7 @@ from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
 from agent.identities import USERS, User
+from agent.keycloak import tokens_for
 from agent.prompts import system_prompt
 from agent.settings import Settings, get_settings
 
@@ -40,19 +41,27 @@ class AgentRun:
     output_tokens: int = 0
 
 
-def connections(user: User, s: Settings) -> dict[str, dict[str, Any]]:
+SERVERS = {  # connection name -> (Keycloak audience, URL setting)
+    "crm": ("mcp-crm", "crm_url"),
+    "finance": ("mcp-finance", "finance_url"),
+    "email": ("mcp-email", "email_url"),
+    "knowledge": ("mcp-knowledge", "knowledge_url"),
+}
+
+
+async def connections(user: User, s: Settings) -> dict[str, dict[str, Any]]:
     """Which MCP servers to load tools from, for the configured target."""
     if s.target == "baseline":
         return {"baseline": {"transport": "streamable_http", "url": s.baseline_url}}
-    headers = {"X-Dev-User": user.user_id, "X-Dev-Role": user.role}
+    tokens = await tokens_for(s, user.username, [aud for aud, _ in SERVERS.values()])
     return {
-        name: {"transport": "streamable_http", "url": url, "headers": headers}
-        for name, url in (
-            ("crm", s.crm_url),
-            ("finance", s.finance_url),
-            ("email", s.email_url),
-            ("knowledge", s.knowledge_url),
-        )
+        name: {
+            "transport": "streamable_http",
+            "url": getattr(s, url_setting),
+            "headers": {"Authorization": f"Bearer {tokens[audience]}"},
+        }
+        for name, (audience, url_setting) in SERVERS.items()
+        if audience in tokens  # no token, no tools: Keycloak decided the user can't use it
     }
 
 
@@ -106,7 +115,7 @@ def summarise(user: str, target: str, prompt: str, messages: list[Any], stopped:
 async def run_agent(username: str, prompt: str, settings: Settings | None = None) -> AgentRun:
     s = settings or get_settings()
     user = USERS[username]
-    client = MultiServerMCPClient(connections(user, s))
+    client = MultiServerMCPClient(await connections(user, s))
     tools = await client.get_tools()
     model = ChatAnthropic(model=s.model, max_tokens=s.max_tokens, max_retries=3)
     graph = build_graph(model, tools)

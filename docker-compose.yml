@@ -31,6 +31,8 @@ services:
       CRM_DB_USER: ${CRM_DB_USER:?Set CRM_DB_USER in .env}
       CRM_DB_PASSWORD: ${CRM_DB_PASSWORD:?Set CRM_DB_PASSWORD in .env}
       CRM_DEV_AUTH: ${CRM_DEV_AUTH:-false}
+      CRM_OIDC_ISSUER: http://localhost:8180/realms/northstar  # the token's iss
+      CRM_OIDC_JWKS_URL: http://keycloak:8080/realms/northstar/protocol/openid-connect/certs  # keys fetched on the internal network
     ports:
       # Localhost only: until phase 5, anyone who can reach this port can claim any identity.
       - "127.0.0.1:${CRM_HOST_PORT:-8001}:8001"
@@ -52,6 +54,8 @@ services:
       FIN_DB_USER: ${FIN_DB_USER:?Set FIN_DB_USER in .env}
       FIN_DB_PASSWORD: ${FIN_DB_PASSWORD:?Set FIN_DB_PASSWORD in .env}
       FIN_DEV_AUTH: ${FIN_DEV_AUTH:-false}
+      FIN_OIDC_ISSUER: http://localhost:8180/realms/northstar  # the token's iss
+      FIN_OIDC_JWKS_URL: http://keycloak:8080/realms/northstar/protocol/openid-connect/certs  # keys fetched on the internal network
     ports:
       - "127.0.0.1:${FIN_HOST_PORT:-8002}:8002"
     depends_on:
@@ -72,6 +76,8 @@ services:
       EMAIL_DB_USER: ${EMAIL_DB_USER:?Set EMAIL_DB_USER in .env}
       EMAIL_DB_PASSWORD: ${EMAIL_DB_PASSWORD:?Set EMAIL_DB_PASSWORD in .env}
       EMAIL_DEV_AUTH: ${EMAIL_DEV_AUTH:-false}
+      EMAIL_OIDC_ISSUER: http://localhost:8180/realms/northstar  # the token's iss
+      EMAIL_OIDC_JWKS_URL: http://keycloak:8080/realms/northstar/protocol/openid-connect/certs  # keys fetched on the internal network
     ports:
       - "127.0.0.1:${EMAIL_HOST_PORT:-8003}:8003"
     depends_on:
@@ -92,11 +98,49 @@ services:
       KNOW_DB_USER: ${KNOW_DB_USER:?Set KNOW_DB_USER in .env}
       KNOW_DB_PASSWORD: ${KNOW_DB_PASSWORD:?Set KNOW_DB_PASSWORD in .env}
       KNOW_DEV_AUTH: ${KNOW_DEV_AUTH:-false}
+      KNOW_OIDC_ISSUER: http://localhost:8180/realms/northstar  # the token's iss
+      KNOW_OIDC_JWKS_URL: http://keycloak:8080/realms/northstar/protocol/openid-connect/certs  # keys fetched on the internal network
     ports:
       - "127.0.0.1:${KNOW_HOST_PORT:-8004}:8004"
     depends_on:
       postgres:
         condition: service_healthy
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.2
+    container_name: northstar-keycloak
+    # Dev mode; the realm is imported on first start. Tokens always carry the public issuer
+    # (http://localhost:8180) even when other containers call it at http://keycloak:8080.
+    command:
+      - start-dev
+      - --import-realm
+      - --hostname=http://localhost:8180
+      - --hostname-backchannel-dynamic=true
+      - --health-enabled=true
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:?Set KC_ADMIN_PASSWORD in .env}
+      # Substituted into keycloak/import/northstar-realm.json at import time.
+      KC_AGENT_CLIENT_SECRET: ${KC_AGENT_CLIENT_SECRET:?Set KC_AGENT_CLIENT_SECRET in .env}
+      KC_GATEWAY_CLIENT_SECRET: ${KC_GATEWAY_CLIENT_SECRET:?Set KC_GATEWAY_CLIENT_SECRET in .env}
+      KC_DEV_USER_PASSWORD: ${KC_DEV_USER_PASSWORD:?Set KC_DEV_USER_PASSWORD in .env}
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import:ro
+    ports:
+      - "127.0.0.1:8180:8080"
+    healthcheck:
+      # The image has no curl; ask the management port's readiness endpoint over bash's /dev/tcp.
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          grep -q '"UP"' <&3
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
     restart: unless-stopped
 
   # INSECURE BASELINE (phase 4): no access control by design. Only started on request:

@@ -11,6 +11,7 @@ class Settings(ServiceSettings):
     model_config = SettingsConfigDict(env_prefix="KNOW_", extra="ignore")
 
     port: int = 8004
+    oidc_audience: str = "mcp-knowledge"  # only tokens issued exactly for this server
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     embedding_dim: int = 384  # must match knowledge.chunks.embedding VECTOR(384)
     model_cache_dir: str | None = None  # None = fastembed's default cache; the image bakes it in

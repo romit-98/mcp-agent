@@ -1,0 +1,158 @@
+{
+  "realm": "northstar",
+  "displayName": "Northstar Logistics (dev)",
+  "enabled": true,
+  "sslRequired": "external",
+  "accessTokenLifespan": 300,
+  "registrationAllowed": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "sales_rep",
+        "description": "Sales rep: CRM, finance (read), email, knowledge",
+        "composite": true,
+        "composites": {
+          "client": {
+            "northstar-gateway": ["access"],
+            "mcp-crm": ["access"],
+            "mcp-finance": ["access"],
+            "mcp-email": ["access"],
+            "mcp-knowledge": ["access"]
+          }
+        }
+      },
+      {
+        "name": "finance_analyst",
+        "description": "Finance analyst: CRM (read), finance, email, knowledge",
+        "composite": true,
+        "composites": {
+          "client": {
+            "northstar-gateway": ["access"],
+            "mcp-crm": ["access"],
+            "mcp-finance": ["access"],
+            "mcp-email": ["access"],
+            "mcp-knowledge": ["access"]
+          }
+        }
+      },
+      {
+        "name": "contractor",
+        "description": "Contractor: contractor-shared documents only",
+        "composite": true,
+        "composites": {
+          "client": {
+            "northstar-gateway": ["access"],
+            "mcp-knowledge": ["access"]
+          }
+        }
+      }
+    ],
+    "client": {
+      "northstar-gateway": [{ "name": "access", "description": "May get tokens for the gateway" }],
+      "mcp-crm": [{ "name": "access", "description": "May get tokens for the CRM server" }],
+      "mcp-finance": [{ "name": "access", "description": "May get tokens for the Finance server" }],
+      "mcp-email": [{ "name": "access", "description": "May get tokens for the Email server" }],
+      "mcp-knowledge": [{ "name": "access", "description": "May get tokens for the Knowledge server" }]
+    }
+  },
+  "clients": [
+    {
+      "clientId": "northstar-agent",
+      "name": "Agent API (token A audience; exchanges for server tokens)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${KC_AGENT_CLIENT_SECRET}",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "attributes": { "standard.token.exchange.enabled": "true" }
+    },
+    {
+      "clientId": "northstar-gateway",
+      "name": "MCP gateway (phase 6)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "${KC_GATEWAY_CLIENT_SECRET}",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "attributes": { "standard.token.exchange.enabled": "true" }
+    },
+    {
+      "clientId": "mcp-crm",
+      "name": "CRM MCP server (audience only)",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false
+    },
+    {
+      "clientId": "mcp-finance",
+      "name": "Finance MCP server (audience only)",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false
+    },
+    {
+      "clientId": "mcp-email",
+      "name": "Email MCP server (audience only)",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false
+    },
+    {
+      "clientId": "mcp-knowledge",
+      "name": "Knowledge MCP server (audience only)",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "id": "5e1f0000-0000-4000-8000-000000000001",
+      "username": "rep1", "email": "rep1@northstar.example", "emailVerified": true,
+      "firstName": "Rep", "lastName": "One", "enabled": true,
+      "credentials": [{ "type": "password", "value": "${KC_DEV_USER_PASSWORD}", "temporary": false }],
+      "realmRoles": ["sales_rep"]
+    },
+    {
+      "id": "5e1f0000-0000-4000-8000-000000000002",
+      "username": "rep2", "email": "rep2@northstar.example", "emailVerified": true,
+      "firstName": "Rep", "lastName": "Two", "enabled": true,
+      "credentials": [{ "type": "password", "value": "${KC_DEV_USER_PASSWORD}", "temporary": false }],
+      "realmRoles": ["sales_rep"]
+    },
+    {
+      "id": "5e1f0000-0000-4000-8000-000000000003",
+      "username": "rep3", "email": "rep3@northstar.example", "emailVerified": true,
+      "firstName": "Rep", "lastName": "Three", "enabled": true,
+      "credentials": [{ "type": "password", "value": "${KC_DEV_USER_PASSWORD}", "temporary": false }],
+      "realmRoles": ["sales_rep"]
+    },
+    {
+      "id": "5e1f0000-0000-4000-8000-000000000004",
+      "username": "finance1", "email": "finance1@northstar.example", "emailVerified": true,
+      "firstName": "Finance", "lastName": "One", "enabled": true,
+      "credentials": [{ "type": "password", "value": "${KC_DEV_USER_PASSWORD}", "temporary": false }],
+      "realmRoles": ["finance_analyst"]
+    },
+    {
+      "id": "5e1f0000-0000-4000-8000-000000000005",
+      "username": "contractor1", "email": "contractor1@contractor.example", "emailVerified": true,
+      "firstName": "Contractor", "lastName": "One", "enabled": true,
+      "credentials": [{ "type": "password", "value": "${KC_DEV_USER_PASSWORD}", "temporary": false }],
+      "realmRoles": ["contractor"]
+    }
+  ]
+}

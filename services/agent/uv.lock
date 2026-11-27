@@ -817,6 +817,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "pyjwt", extra = ["crypto"] },
     { name = "pytest" },
 ]
 
@@ -831,7 +832,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=8" }]
+dev = [
+    { name = "pyjwt", extras = ["crypto"], specifier = ">=2.10,<3" },
+    { name = "pytest", specifier = ">=8" },
+]
 
 [[package]]
 name = "opentelemetry-api"

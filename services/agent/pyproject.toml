@@ -13,7 +13,10 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = [
+    "pyjwt[crypto]>=2.10,<3",
+    "pytest>=8",
+]
 
 [build-system]
 requires = ["hatchling"]

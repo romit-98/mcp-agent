@@ -8,12 +8,15 @@ writes those (security rule 10, ADR 0002).
 import logging
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Literal, cast, get_args
+from typing import TYPE_CHECKING, Literal, cast, get_args
 from uuid import UUID
 
 from mcp.server.mcpserver import Context
 
 from northstar_common.errors import Unauthenticated
+
+if TYPE_CHECKING:
+    from northstar_common.tokens import TokenValidator
 
 log = logging.getLogger(__name__)
 
@@ -56,6 +59,30 @@ def identity_from_headers(headers: Mapping[str, str] | None, *, dev_auth: bool) 
     return Identity(user_id=user_id, role=cast(Role, raw_role))
 
 
-def current_user(ctx: Context, *, dev_auth: bool) -> Identity:
+def identity_from_request(
+    headers: Mapping[str, str] | None,
+    *,
+    dev_auth: bool,
+    validator: "TokenValidator | None",
+) -> Identity:
+    """A bearer token if one was sent; otherwise the dev headers, only if dev auth is on.
+
+    A request that sends an Authorization header is judged on that token alone: a bad token
+    never falls back to the dev headers.
+    """
+    lowered = {k.lower(): v for k, v in (headers or {}).items()}
+    authorization = lowered.get("authorization")
+    if authorization is not None:
+        scheme, _, token = authorization.strip().partition(" ")
+        if scheme.lower() != "bearer" or not token.strip() or validator is None:
+            log.warning("auth denied: unusable Authorization header")
+            raise Unauthenticated()
+        return validator.validate(token.strip())
+    return identity_from_headers(headers, dev_auth=dev_auth)
+
+
+def current_user(
+    ctx: Context, *, dev_auth: bool, validator: "TokenValidator | None" = None
+) -> Identity:
     """Identity of the caller for this request. Raises Unauthenticated if there isn't one."""
-    return identity_from_headers(ctx.headers, dev_auth=dev_auth)
+    return identity_from_request(ctx.headers, dev_auth=dev_auth, validator=validator)

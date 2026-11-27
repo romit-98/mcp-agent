@@ -11,6 +11,7 @@ class Settings(ServiceSettings):
     model_config = SettingsConfigDict(env_prefix="CRM_", extra="ignore")
 
     port: int = 8001
+    oidc_audience: str = "mcp-crm"  # only tokens issued exactly for this server
 
 
 @lru_cache

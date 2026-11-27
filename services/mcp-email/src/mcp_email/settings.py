@@ -11,6 +11,7 @@ class Settings(ServiceSettings):
     model_config = SettingsConfigDict(env_prefix="EMAIL_", extra="ignore")
 
     port: int = 8003
+    oidc_audience: str = "mcp-email"  # only tokens issued exactly for this server
     internal_domain: str = "northstar.example"  # staff addresses; anything else is external
 
 

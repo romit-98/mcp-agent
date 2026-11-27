@@ -13,6 +13,11 @@ class ServiceSettings(BaseSettings):
     port: int
     dev_auth: bool = False  # trust the X-Dev-User header; off unless set, so it fails closed
 
+    # Token validation (phase 5). Each server sets its own audience (its Keycloak client ID).
+    oidc_issuer: str = "http://localhost:8180/realms/northstar"
+    oidc_audience: str = ""  # empty = no tokens accepted (fails closed)
+    oidc_jwks_url: str | None = None  # default: <issuer>/protocol/openid-connect/certs
+
     db_host: str = "localhost"
     db_port: int = 5433
     db_name: str = "northstar"

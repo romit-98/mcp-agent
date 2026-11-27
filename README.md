@@ -55,7 +55,7 @@ Nobody can read HR-confidential docs in v1. They exist to test that retrieval ne
 - [x] 2. CRM MCP server
 - [x] 3. Finance, Knowledge, Email servers
 - [x] 4. Insecure baseline agent
-- [ ] 5. Identity (Keycloak)
+- [x] 5. Identity (Keycloak)
 - [ ] 6. Gateway and security layers
 - [ ] 7. Eval harness and CI
 - [ ] 8. Azure deployment
@@ -68,6 +68,7 @@ Definitions of done: [docs/PROJECT_SPEC.md](docs/PROJECT_SPEC.md), section 8.
 - [0002: Identity comes from the request, never from tool arguments](docs/adr/0002-identity-from-the-request.md)
 - [0003: Local embeddings and permission-aware hybrid search](docs/adr/0003-local-embeddings-and-hybrid-search.md)
 - [0004: One shared library for security-critical code](docs/adr/0004-shared-library-for-security-code.md)
+- [0005: Keycloak locally, with one exchanged token per server](docs/adr/0005-keycloak-and-per-server-tokens.md)
 
 ## Quick start
 
@@ -178,6 +179,29 @@ cd services/mcp-knowledge && uv run --env-file ../../.env python -m mcp_knowledg
 uv run --env-file ../../.env pytest                                     # 22 tests
 ```
 
+## Identity: Keycloak and token exchange (phase 5)
+
+Keycloak (`http://localhost:8180`, realm `northstar`) issues every token. The realm is imported
+from `keycloak/import/northstar-realm.json`; users have the same fixed UUIDs as the database,
+and secrets come from `.env`.
+
+1. The agent signs the user in and gets **token A** (audience: every server the user's role may use).
+2. It exchanges token A for **one token per server** (audience: that server only). Keycloak
+   refuses servers the role can't use; a contractor never gets a Finance token, so the agent
+   never even gets Finance tools.
+3. Each server checks the signature (RS256, realm keys), issuer, expiry, token type, subject,
+   role, and that the audience is **exactly itself**. Token A passed straight through is refused.
+
+```sh
+docker compose up -d keycloak
+cd services/agent
+uv run --env-file ../../.env python -m agent --target servers --user rep1 "Show me the invoices for ACC-0001."
+uv run --env-file ../../.env pytest        # 8 live tests against Keycloak and the CRM server
+```
+
+Token validation has 34 unit tests in `libs/northstar-common` (expired, wrong audience, wrong
+issuer, forged signature, `alg: none`, algorithm confusion, ID token, bad subject, role).
+
 ## Agent and the baseline (phase 4)
 
 `services/agent` is a LangGraph agent (model, then tools, then model, with a step limit) that
@@ -187,7 +211,7 @@ The agent code, prompt and model stay the same for every run; only the tool laye
 | Target | Tools come from | Permissions enforced by |
 |---|---|---|
 | `baseline` | `services/mcp-insecure`: one all-access account, the user as a tool argument | The system prompt only |
-| `servers` | The four secured servers, identity in headers | Each server, in code |
+| `servers` | The four secured servers, one exchanged token each | Keycloak and each server, in code |
 | `gateway` (phase 6) | The gateway in front of the servers | Gateway, servers and the database |
 
 ```sh
@@ -247,5 +271,6 @@ secure-mcp-agent/
 │   ├── harness/         # scenario runner, leak detection, metrics
 │   ├── scenarios/       # S1-S6 as YAML
 │   └── reports/         # baseline.md (phase 4), secured.md (phase 7)
+├── keycloak/import/     # realm: users, roles, clients (secrets come from .env)
 └── infra/               # Terraform, phase 8
 ```

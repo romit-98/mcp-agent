@@ -11,6 +11,7 @@ class Settings(ServiceSettings):
     model_config = SettingsConfigDict(env_prefix="FIN_", extra="ignore")
 
     port: int = 8002
+    oidc_audience: str = "mcp-finance"  # only tokens issued exactly for this server
 
 
 @lru_cache
